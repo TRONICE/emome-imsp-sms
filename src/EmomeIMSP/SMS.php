@@ -3,6 +3,7 @@
  * PHP library for Emome IMSP SMS's HTTP API
  *
  * @author Kun-Fu Tseng, Shu-Te University, http://www.stu.edu.tw
+ * @editor John Chen, Tronice Co., Ltd., https://www.tronice.com
  * @license MIT License
  */
 
@@ -10,10 +11,9 @@ namespace EmomeIMSP;
 
 require "ShortMessageProviderInterface.php";
 
-
 class SMS implements ShortMessageProviderInterface
 {
-  protected $_host = "http://imsp.emome.net:8008/imsp/sms/servlet";
+  protected $_host = "https://imsp.emome.net:4443/imsp/sms/servlet";
   protected $_parameters = array();
 
   /**
@@ -34,7 +34,6 @@ class SMS implements ShortMessageProviderInterface
       "from_addr"       => null,
       "to_addr_type"    => 0,
       "to_addr"         => null,
-      "msg_dlv_time"    => 0,
       "msg_expire_time" => 0,
       "msg_type"        => 0,
       "msg_dcs"         => 0,
@@ -87,17 +86,18 @@ class SMS implements ShortMessageProviderInterface
    */
   protected function _parseResponse($response) 
   {
-    $response = preg_replace('/<[a-zA-Z\/][^>]*>/', '', $response);
+    $response = preg_replace('/<br>$/', '', $response);
+    $response = strip_tags($response, '<br>');
     $response = preg_replace('/[\r\n]*/', '', $response);
-    $x = explode('|', $response);
+    $tmpResult = explode('<br>', $response);
 
-    $response = array(
-      'to_addr' => $x[0],
-      'code' => intval($x[1]),
-      'message_id' => $x[2],
-      'description' => $x[3]
-    );
-    return $response;
+    if ($tmpResult) {
+        foreach ($tmpResult as $key => $val) {
+            $x = explode('|', $val);
+            $result[$x[0]] = $x;
+        }
+    }
+    return $result;
   }
 
   /**
