@@ -88,9 +88,9 @@ class SMS implements ShortMessageProviderInterface
      */
     protected function _parseResponse($response) 
     {
-        $response = preg_replace('/<br>$/', '', $response);
         $response = strip_tags($response, '<br>');
         $response = preg_replace('/[\r\n]*/', '', $response);
+        $response = preg_replace('/<br>$/', '', $response);
         $tmpResult = explode('<br>', $response);
 
         if ($tmpResult) {
