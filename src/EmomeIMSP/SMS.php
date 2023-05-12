@@ -96,7 +96,7 @@ class SMS implements ShortMessageProviderInterface
         if ($tmpResult) {
             foreach ($tmpResult as $key => $val) {
                 $x = explode('|', $val);
-                $result[$x[0]] = $x;
+                $result[] = $x;
             }
         }
         return $result;
