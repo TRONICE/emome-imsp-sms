@@ -16,6 +16,8 @@ class SMS implements ShortMessageProviderInterface
     protected $_host = "https://imsp.emome.net:4443/imsp/sms/servlet";
     protected $_parameters = [];
 
+    protected $_msg_dcs = 8; //都以 Unicode 去處理
+
     /**
      * Constructor
      *
@@ -36,12 +38,13 @@ class SMS implements ShortMessageProviderInterface
             "to_addr"         => null,
             "msg_expire_time" => 0,
             "msg_type"        => 0,
-            "msg_dcs"         => 0,
             "msg_pclid"       => 0,
             "msg_udhi"        => 0,
             "msg"             => null,
             "dest_port"       => 0
         ];
+
+        $this->_parameters["msg_dcs"] = $this->_msg_dcs; //不讓用戶從外面變更
     }
 
     /**
@@ -53,7 +56,7 @@ class SMS implements ShortMessageProviderInterface
     public function submitSM($params = []) 
     {
         $params = array_merge($this->_parameters, $params);
-        $params["msg"] = $this->convertMessageByMessageType($params["msg"], $params["msg_type"]);
+        $params["msg"] = $this->convertMessage($params["msg"]);
         $params["dest_port"] = $this->convertDestPortByMessageType($params["dest_port"], $params["msg_type"]);
         $params["to_addr"] = $this->convertToAddr($params["to_addr"]);
 
@@ -118,33 +121,17 @@ class SMS implements ShortMessageProviderInterface
     }
 
     /**
-     * Convert message by message type code.
-     * 0 or 1 => Big5
-     * 2 or 3 => UTF-16 and HEX
+     * Convert message
      *
-     * @param  array|string $to_addr
+     * @param  string $msg
      * @return string 
      */
-    protected function convertMessageByMessageType($msg, $msg_type) 
+    protected function convertMessage($msg) 
     {
         mb_internal_encoding("UTF-8");
 
-        // 0 or 1 => Big5
-        if ($msg_type <= 1) {
-            $msg = iconv("UTF-8", "Big5", $msg);
-        } 
-        elseif ($msg_type == 2 || $msg_type == 3) {
-            // 2 or 3 => UTF-16 and HEX
-            $msg = mb_convert_encoding($msg, "UTF-16", "UTF-8");
-            $str = "";
-            $len = strlen($str);
-            for ($i = 0; $i < $len; ++$i) {
-                $byte = $str[$i];
-                $char = ord($byte);
-                $str .= sprintf('%02x', $char);
-            }
-            $msg = $str;
-        }
+        $msg = mb_convert_encoding($msg, "UTF-16BE", "UTF-8");
+        $msg = strtoupper(bin2hex($msg));
 
         return $msg;
     }
