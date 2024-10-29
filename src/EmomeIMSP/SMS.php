@@ -13,7 +13,7 @@ require "ShortMessageProviderInterface.php";
 
 class SMS implements ShortMessageProviderInterface
 {
-    protected $_host = "https://imsp.emome.net:4443/imsp/sms/servlet";
+    protected $_host = "https://imsp.cht.com.tw:4443/imsp/sms/servlet";
     protected $_parameters = [];
 
     protected $_msg_dcs = 8; //都以 Unicode 去處理
